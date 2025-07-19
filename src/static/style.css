@@ -1,0 +1,56 @@
+/* Reset */
+* {
+  margin: 0;
+  padding: 0;
+  font-family: inherit;
+  font-size: inherit;
+  box-sizing: border-box;
+  font-weight: normal;
+  font-style: normal;
+}
+
+:root {
+  font-family: system-ui, sans-serif;
+  font-size: 100%;
+}
+
+html {
+  background-color: cornsilk;
+}
+
+body {
+  padding: 1rem 2rem;
+}
+
+h1 {
+  font-size: 2rem;
+  font-weight: bold;
+}
+
+input[type="file"] {
+  border: 2px solid black;
+  border-radius: 5px;
+  background-color: bisque;
+  padding: 0.3rem;
+}
+input[type="file"]:hover {
+  border-style: dashed;
+}
+
+input {
+  padding: 0.1rem 0.5rem;
+  cursor: pointer;
+}
+
+input[type="submit"] {
+  width: fit-content;
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  width: 100%;
+  max-width: 40rem;
+  margin: auto;
+}
