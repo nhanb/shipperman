@@ -3,7 +3,7 @@ const std = @import("std");
 // Although this function looks imperative, note that its job is to
 // declaratively construct a build graph that will be executed by an external
 // runner.
-pub fn build(b: *std.Build) void {
+pub fn build(b: *std.Build) !void {
     const target = b.standardTargetOptions(.{});
     const optimize = b.standardOptimizeOption(.{});
     const exe_mod = b.createModule(.{
@@ -11,6 +11,25 @@ pub fn build(b: *std.Build) void {
         .target = target,
         .optimize = optimize,
     });
+
+    // Collect static file paths
+    {
+        var files = std.ArrayList([]const u8).init(b.allocator);
+        defer files.deinit();
+        var options = b.addOptions();
+
+        var dir = try std.fs.cwd().openDir("src/static", .{ .iterate = true });
+        var it = dir.iterate();
+        while (try it.next()) |file| {
+            if (file.kind != .file) {
+                continue;
+            }
+            try files.append(b.dupe(file.name));
+        }
+
+        options.addOption([]const []const u8, "static_files", files.items);
+        exe_mod.addOptions("options", options);
+    }
 
     // http.zig
     const httpz = b.dependency("httpz", .{

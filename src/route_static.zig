@@ -1,28 +1,17 @@
 const std = @import("std");
 const httpz = @import("httpz");
+const options = @import("options");
+
+// To add a new static asset, simply put it in ./src/static/
+// Such files will be automatically embedded into our program executable.
+//
+// Remember to define a public const for each file for other code to access:
+pub const style_css = assets.get("style.css").?;
+pub const home_js = assets.get("home.js").?;
+pub const mithril_js = assets.get("mithril.js").?;
 
 pub const URL_PATH = "/static";
 const FS_PATH = "./static";
-
-// To add a new static asset:
-// (0) Put the file in FS_PATH
-// (1) Declare its properties in `raw_assets`
-// (2) Define a public const for it from the generated `assets` var
-//
-// This setup is a bit janky but it's the least repetitive I could think of... without resorting
-// to full-on zig source code generation, which would be severely hurt readability IMHO.
-
-// (1)
-const raw_assets = .{
-    .{ "style.css", .other },
-    .{ "home.js", .other },
-    .{ "mithril.js", .other },
-};
-
-// (2)
-pub const style_css = assets[0];
-pub const home_js = assets[1];
-pub const mithril_js = assets[2];
 
 pub const Asset = struct {
     name: []const u8,
@@ -40,34 +29,34 @@ pub const Asset = struct {
     url_path: []const u8,
 };
 
-const assets: []const Asset = assets_block: {
-    var result: [raw_assets.len]Asset = undefined;
-    for (raw_assets, 0..) |raw, i| {
-        const filename = raw[0];
-        result[i] = .{
-            .name = filename,
-            .kind = raw[1],
-            .data = @embedFile(FS_PATH ++ "/" ++ raw[0]),
-            .url_path = URL_PATH ++ "/" ++ raw[0],
-            .content_type = httpz.ContentType.forFile(filename),
+const assets: std.StaticStringMap(Asset) = blk: {
+    var kvs: [options.static_files.len]struct { []const u8, Asset } = undefined;
+    for (options.static_files, 0..) |filename, i| {
+        kvs[i] = .{
+            filename,
+            .{
+                .name = filename,
+                .kind = .other,
+                .data = @embedFile(FS_PATH ++ "/" ++ filename),
+                .url_path = URL_PATH ++ "/" ++ filename,
+                .content_type = httpz.ContentType.forFile(filename),
+            },
         };
     }
-    // Copy to a const because result is a comptime var which is not allowed to "leak":
-    // https://ziggit.dev/t/comptime-mutable-memory-changes/3702
-    const final = result;
-    break :assets_block &final;
+    const map = std.StaticStringMap(Asset).initComptime(kvs);
+    break :blk map;
 };
 
 pub fn serve(req: *httpz.Request, res: *httpz.Response) !void {
     const filename = req.param("filename").?;
-    // TODO is there a better way than repeatedly running std.mem.eql?
-    inline for (assets) |asset| {
-        if (std.mem.eql(u8, filename, asset.name)) {
-            res.status = 200;
-            res.body = asset.data;
-            res.content_type = asset.content_type;
-            return;
-        }
+
+    if (assets.get(filename)) |asset| {
+        res.status = 200;
+        res.body = asset.data;
+        res.content_type = asset.content_type;
+    } else {
+        res.status = 404;
+        res.body = "Not Found";
+        res.content_type = .TEXT;
     }
-    res.status = 404;
 }
