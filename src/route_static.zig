@@ -7,8 +7,9 @@ const options = @import("options");
 //
 // Remember to define a public const for each file for other code to access:
 pub const style_css = assets.get("style.css").?;
-pub const home_js = assets.get("home.js").?;
 pub const mithril_js = assets.get("mithril.js").?;
+pub const home_js = assets.get("home.js").?;
+pub const download_js = assets.get("download.js").?;
 
 pub const URL_PATH = "/static";
 const FS_PATH = "./static";

@@ -124,7 +124,7 @@ addEventListener("DOMContentLoaded", () => {
                   size,
                   key,
                 });
-                const href = `/get/${uid}#${params}`;
+                const href = `/download/${uid}#${params}`;
                 return m("li", m("a", { href }, `${name} (${size} bytes)`));
               }),
             )

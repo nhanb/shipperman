@@ -4,6 +4,7 @@ const httpz = @import("httpz");
 const home = @import("./route_home.zig");
 const static = @import("./route_static.zig");
 const upload = @import("./route_upload.zig");
+const download = @import("./route_download.zig");
 const constants = @import("./constants.zig");
 
 const port = 8000;
@@ -39,6 +40,7 @@ pub fn main() !void {
     router.get("/", home.serve, .{});
     router.get(static.URL_PATH ++ "/:filename", static.serve, .{});
     router.post("/upload", upload.serve, .{});
+    router.get("/download/:uid_b64", download.serve, .{});
 
     // blocks
     try server.listen();
