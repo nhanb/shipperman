@@ -20,7 +20,7 @@ html {
 }
 
 body {
-  padding: 1rem 2rem;
+  padding: 1rem;
 }
 
 h1 {
@@ -55,11 +55,17 @@ button:active {
   background: linear-gradient(#ccc, white, white);
 }
 
+body {
+  width: 100%;
+  max-width: 50rem;
+  margin: auto;
+}
+
 #upload-form {
   display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  width: 100%;
-  max-width: 40rem;
-  margin: auto;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+#file-input {
+  flex-grow: 1;
 }
