@@ -5,6 +5,8 @@ addEventListener("DOMContentLoaded", () => {
   let uploading = false;
   let errorMsg = null;
 
+  let uploadedFiles = [];
+
   m.mount(main, {
     view: () => {
       return [
@@ -17,21 +19,61 @@ addEventListener("DOMContentLoaded", () => {
             onsubmit: (ev) => {
               ev.preventDefault();
 
-              uploading = true;
-              m.request({
-                url: `/upload/${crypto.randomUUID()}`,
-                method: "POST",
-                body: originalFile,
-              })
-                .then(() => {
-                  console.log("Saul Goodman");
-                })
-                .catch((err) => {
-                  errorMsg = err.toString();
-                })
-                .finally(() => {
-                  uploading = false;
-                });
+              Promise.all([
+                originalFile.arrayBuffer(),
+                window.crypto.subtle.generateKey(
+                  {
+                    name: "AES-GCM",
+                    length: 256,
+                  },
+                  true,
+                  ["encrypt", "decrypt"],
+                ),
+              ]).then(([inputArrayBuffer, key]) => {
+                const iv = window.crypto.getRandomValues(new Uint8Array(12));
+
+                window.crypto.subtle
+                  .encrypt({ name: "AES-GCM", iv }, key, inputArrayBuffer)
+                  .then((encryptedArrayBuffer) => {
+                    // Upload encrypted blob
+                    uploading = true;
+                    errorMsg = null;
+
+                    m.request({
+                      url: `/upload`,
+                      method: "POST",
+                      body: encryptedArrayBuffer,
+                      serialize: (body) => body,
+                      extract: (xhr, options) => xhr.responseText,
+                    })
+                      .then((uid) => {
+                        window.crypto.subtle
+                          .exportKey("raw", key)
+                          .then((exportedKey) => {
+                            const keyString = new Uint8Array(exportedKey).join(
+                              ".",
+                            );
+                            uploadedFiles.push({
+                              uid: uid,
+                              name: originalFile.name,
+                              size: originalFile.size,
+                              key: keyString,
+                            });
+                            m.redraw();
+                          });
+                      })
+                      .catch((err) => {
+                        if (err.code !== 400) {
+                          errorMsg = "Unexpected error occurred.";
+                        } else {
+                          errorMsg = err.response.message;
+                        }
+                      })
+                      .finally(() => {
+                        uploading = false;
+                      });
+                  });
+              });
             },
           },
           [
@@ -64,6 +106,23 @@ addEventListener("DOMContentLoaded", () => {
                 },
               },
               [m("span.spin", "/"), m("span", "uploading...")],
+            )
+          : null,
+
+        errorMsg ? m(".error", errorMsg) : null,
+
+        uploadedFiles.length > 0
+          ? m(
+              "ul",
+              uploadedFiles.map(({ uid, name, key, size }) => {
+                const params = new URLSearchParams({
+                  name,
+                  size,
+                  key,
+                });
+                const href = `/get/${uid}#${params}`;
+                return m("li", m("a", { href }, `${name} (${size} bytes)`));
+              }),
             )
           : null,
       ];

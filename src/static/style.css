@@ -63,6 +63,18 @@ button:disabled {
   opacity: 0.9;
 }
 
+a {
+  color: #0058ff;
+  text-decoration: none;
+}
+a:hover {
+  text-decoration: underline;
+}
+
+li {
+  list-style: none;
+}
+
 body {
   width: 100%;
   max-width: 50rem;
@@ -107,4 +119,8 @@ main {
   to {
     opacity: 0.2;
   }
+}
+
+.error {
+  color: brown;
 }

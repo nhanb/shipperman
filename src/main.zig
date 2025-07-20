@@ -31,7 +31,7 @@ pub fn main() !void {
     var router = try server.router(.{});
     router.get("/", home.serve, .{});
     router.get(static.URL_PATH ++ "/:filename", static.serve, .{});
-    router.post("/upload/:uuid", upload.serve, .{});
+    router.post("/upload", upload.serve, .{});
 
     // blocks
     try server.listen();
