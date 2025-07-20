@@ -50,6 +50,10 @@ addEventListener("DOMContentLoaded", () => {
                         window.crypto.subtle
                           .exportKey("raw", key)
                           .then((exportedKey) => {
+                            // There's an Uint8Array.toBase64() but it's only
+                            // implemented in Firefox, so we'll have to settle
+                            // with this dumb "period-separated numbers" format
+                            // for now.
                             const keyString = new Uint8Array(exportedKey).join(
                               ".",
                             );
