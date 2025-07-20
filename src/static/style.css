@@ -54,6 +54,14 @@ input[type="submit"]:active,
 button:active {
   background: linear-gradient(#ccc, white, white);
 }
+input:disabled,
+button:disabled {
+  background: #eaeaea;
+  border-color: #aaa;
+  color: #aaa;
+  cursor: default;
+  opacity: 0.9;
+}
 
 body {
   width: 100%;
@@ -61,11 +69,42 @@ body {
   margin: auto;
 }
 
-#upload-form {
+main {
   display: flex;
+  flex-direction: column;
   gap: 0.5rem;
-  margin-top: 0.5rem;
 }
-#file-input {
-  flex-grow: 1;
+
+/* spinner */
+.spin {
+  display: inline-block;
+  animation-name: spin;
+  animation-duration: 0.7s;
+  animation-iteration-count: infinite;
+  animation-timing-function: linear;
+}
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* blinker */
+.blink {
+  display: inline-block;
+  animation-name: blink;
+  animation-duration: 500ms;
+  animation-iteration-count: infinite;
+  animation-timing-function: linear;
+}
+@keyframes blink {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0.2;
+  }
 }

@@ -1,22 +1,72 @@
 addEventListener("DOMContentLoaded", () => {
-  const uploadForm = document.querySelector("#upload-form");
-  const fileInput = document.querySelector("#file-input");
+  const main = document.querySelector("main");
 
-  uploadForm.addEventListener("submit", (ev) => {
-    const file = fileInput.files[0];
-    const uuid = crypto.randomUUID();
+  let originalFile = null;
+  let uploading = false;
+  let errorMsg = null;
 
-    fetch(`/upload/${uuid}`, {
-      method: "POST",
-      body: file,
-    })
-      .then(() => {
-        console.log("Saul Goodman");
-      })
-      .catch((err) => {
-        console.log("EHHHH", err);
-      });
+  m.mount(main, {
+    view: () => {
+      return [
+        m("p", "Choose a file to upload:"),
 
-    ev.preventDefault();
+        m(
+          "form",
+          {
+            style: { display: "flex", gap: "0.4rem" },
+            onsubmit: (ev) => {
+              ev.preventDefault();
+
+              uploading = true;
+              m.request({
+                url: `/upload/${crypto.randomUUID()}`,
+                method: "POST",
+                body: originalFile,
+              })
+                .then(() => {
+                  console.log("Saul Goodman");
+                })
+                .catch((err) => {
+                  errorMsg = err.toString();
+                })
+                .finally(() => {
+                  uploading = false;
+                });
+            },
+          },
+          [
+            m("input", {
+              style: { flexGrow: "1" },
+              type: "file",
+              required: true,
+              disabled: uploading,
+              onchange: (e) => {
+                originalFile = e.target.files[0];
+              },
+            }),
+            m("input", {
+              type: "submit",
+              value: "upload",
+              disabled: uploading,
+            }),
+          ],
+        ),
+
+        uploading
+          ? m(
+              ".blink",
+              {
+                style: {
+                  display: "flex",
+                  width: "fit-content",
+                  gap: "0.5rem",
+                  marginLeft: "0.5rem",
+                },
+              },
+              [m("span.spin", "/"), m("span", "uploading...")],
+            )
+          : null,
+      ];
+    },
   });
 });
