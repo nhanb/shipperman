@@ -1,11 +1,12 @@
 const std = @import("std");
 const log = std.log;
 const httpz = @import("httpz");
+const constants = @import("./constants.zig");
 const home = @import("./route_home.zig");
 const static = @import("./route_static.zig");
 const upload = @import("./route_upload.zig");
 const download = @import("./route_download.zig");
-const constants = @import("./constants.zig");
+const fetch = @import("./route_fetch.zig");
 
 const port = 8000;
 
@@ -27,7 +28,7 @@ pub fn main() !void {
     var server = try httpz.Server(void).init(allocator, .{
         .port = port,
         .request = .{
-            .max_body_size = 1024 * 1024 * 512,
+            .max_body_size = constants.max_body_bytes,
         },
     }, {});
     defer {
@@ -41,6 +42,7 @@ pub fn main() !void {
     router.get(static.URL_PATH ++ "/:filename", static.serve, .{});
     router.post("/upload", upload.serve, .{});
     router.get("/download/:uid_b64", download.serve, .{});
+    router.get("/fetch/:uid_b64", fetch.serve, .{});
 
     // blocks
     try server.listen();

@@ -59,11 +59,13 @@ addEventListener("DOMContentLoaded", () => {
                             const keyString = new Uint8Array(exportedKey).join(
                               ".",
                             );
+                            const ivString = new Uint8Array(iv).join(".");
                             uploadedFiles.push({
                               uid: uid,
                               name: originalFile.name,
                               size: originalFile.size,
                               key: keyString,
+                              iv: ivString,
                             });
                             m.redraw();
                           });
@@ -120,11 +122,12 @@ addEventListener("DOMContentLoaded", () => {
         uploadedFiles.length > 0
           ? m(
               "ul",
-              uploadedFiles.map(({ uid, name, key, size }) => {
+              uploadedFiles.map(({ uid, name, key, iv, size }) => {
                 const params = new URLSearchParams({
                   name,
                   size,
                   key,
+                  iv,
                 });
                 const href = `/download/${uid}#${params}`;
                 return m(
