@@ -1,3 +1,5 @@
+import { humanFileSize } from "./utils.js";
+
 addEventListener("DOMContentLoaded", () => {
   const main = document.querySelector("main");
 
@@ -125,7 +127,10 @@ addEventListener("DOMContentLoaded", () => {
                   key,
                 });
                 const href = `/download/${uid}#${params}`;
-                return m("li", m("a", { href }, `${name} (${size} bytes)`));
+                return m(
+                  "li",
+                  m("a", { href }, `${name} (${humanFileSize(size)})`),
+                );
               }),
             )
           : null,
